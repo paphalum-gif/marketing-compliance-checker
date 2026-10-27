@@ -1,4 +1,4 @@
-import base64, csv, io, os, subprocess, tempfile
+import base64, csv, io, os, subprocess, tempfile, logging
 import fitz
 from PIL import Image
 from fastapi import HTTPException
@@ -38,6 +38,7 @@ def read_document(filename,content):
         raise HTTPException(413,"File must be 1 byte to 10 MB")
     ext=os.path.splitext(filename.lower())[1]
     notices=[]
+    stage='validate'
     if ext in (".png",".jpg",".jpeg",".webp"):
         try:
             im=Image.open(io.BytesIO(content))
@@ -53,10 +54,14 @@ def read_document(filename,content):
             if ext==".pptx":
                 original=os.path.join(d,"uploaded.pptx")
                 with open(original,"wb") as f:f.write(content)
-                res=subprocess.run(["libreoffice","-env:UserInstallation=file://"+os.path.join(d,"lo_profile"),"--headless","--convert-to","pdf","--outdir",d,original],capture_output=True,text=True,timeout=105)
+                stage="libreoffice_conversion"
+                cmd=["libreoffice","-env:UserInstallation=file://"+os.path.join(d,"lo_profile"),"--headless","--convert-to","pdf","--outdir",d,original]
+                res=subprocess.run(cmd,capture_output=True,text=True,timeout=105,env={**os.environ,"HOME":d,"XDG_CONFIG_HOME":d})
                 pdfpath=os.path.join(d,"uploaded.pdf")
                 if res.returncode!=0 or not os.path.isfile(pdfpath):
-                    raise ValueError("PPTX slide conversion failed")
+                    logging.warning("Slide conversion failed: rc=%s stdout=%s stderr=%s",res.returncode,res.stdout[:700],res.stderr[:700])
+                    raise ValueError("LibreOffice failed to create PDF")
+                stage="pdf_open"
                 document=fitz.open(pdfpath)
             else:
                 document=fitz.open(stream=content,filetype="pdf")
@@ -65,13 +70,25 @@ def read_document(filename,content):
                 notices.append("ตรวจตัวอย่างได้สูงสุด 6 สไลด์/หน้าแรก; หน้าที่เหลือยังไม่ได้ตรวจ")
             pages=[]
             for n in range(min(len(document),MAX_PAGES)):
-                pix=document[n].get_pixmap(matrix=fitz.Matrix(1.5,1.5),alpha=False)
+                stage="render_page_"+str(n+1)
+                pix=document[n].get_pixmap(matrix=fitz.Matrix(1.35,1.35),alpha=False)
                 im=Image.open(io.BytesIO(pix.tobytes("png")))
-                p=page_data(im,n+1)
                 native=document[n].get_text().strip()
+                stage="ocr_page_"+str(n+1)
+                try:
+                    p=page_data(im,n+1)
+                except Exception as ocr_error:
+                    logging.warning("OCR failed on page %s: %s",n+1,type(ocr_error).__name__)
+                    p={"page":n+1,"image":png_data(im),"words":[],"ocr_text":""}
+                    notices.append("OCR failed on slide "+str(n+1)+"; preview is still available")
                 p["text"]=native if len(native)>len(p["ocr_text"]) else p["ocr_text"]
                 pages.append(p)
             document.close()
             return {"pages":pages,"warnings":notices}
     except HTTPException:raise
-    except Exception as e:raise HTTPException(422,"Could not convert or read document") from e
+    except subprocess.TimeoutExpired as e:
+        logging.exception("Slide processing timed out at %s",stage)
+        raise HTTPException(422,"Slide converter timed out at "+stage) from e
+    except Exception as e:
+        logging.exception("Slide processing failed at %s: %s",stage,type(e).__name__)
+        raise HTTPException(422,"Slide processing failed at "+stage+" ("+type(e).__name__+")") from e
