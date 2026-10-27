@@ -63,7 +63,9 @@ def extract_file(filename, data):
             prs = Presentation(io.BytesIO(data))
             if len(prs.slides) > MAX_PARTS:
                 notes.append("Only first 20 slides evaluated")
-            for i, slide in enumerate(prs.slides[:MAX_PARTS], 1):
+            for i, slide in enumerate(prs.slides, 1):
+                if i > MAX_PARTS:
+                    break
                 chunks = []
                 for shape in slide.shapes:
                     if shape.has_text_frame:
