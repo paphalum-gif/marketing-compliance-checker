@@ -84,4 +84,17 @@ function evidenceView(){
 }
 function exportReport(){if(!report)return;let b=new Blob([JSON.stringify(report,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="screening-demo-report.json";a.click();URL.revokeObjectURL(a.href)}</script></html>'''
 @app.get("/",response_class=HTMLResponse)
-def home():return HTML
+def home():
+ from fastapi.responses import RedirectResponse
+ return RedirectResponse(url="/review",status_code=302)
+
+@app.post("/api/preview")
+async def preview_slides(file:UploadFile=File(...)):
+ from slide_viewer import read_document
+ data=await file.read(10_000_001)
+ return read_document(file.filename or "upload",data)
+
+@app.get("/review",response_class=HTMLResponse)
+def review_home():
+ with open("ui.html",encoding="utf-8") as f:
+  return HTMLResponse(f.read(),headers={"Cache-Control":"no-store"})
