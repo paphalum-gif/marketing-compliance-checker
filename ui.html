@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Marketing Compliance Checker — Slide Review</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f6fb;color:#263852;font:15px system-ui,'Segoe UI',sans-serif;line-height:1.55}
+header{background:#203858;color:white;padding:18px max(calc((100vw - 1170px)/2),20px)}h1{font-size:24px;margin:0}h2{font-size:19px;margin:0 0 12px}h3{font-size:16px;margin:10px 0}
+main{max-width:1170px;padding:0 16px;margin:24px auto}.card{background:white;border:1px solid #e1e6ef;border-radius:14px;padding:22px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.review{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px}
+label{font-weight:650;font-size:13px;display:block;margin:12px 0 5px}select,textarea,input[type=file]{width:100%;padding:10px;border:1px solid #cbd4e2;border-radius:8px;font:inherit}textarea{min-height:95px}
+button{font:inherit;border:0;border-radius:8px;padding:11px 16px;background:#1966d4;color:white;font-weight:650;cursor:pointer}button:disabled{opacity:.5;cursor:wait}
+p.hint,.muted{color:#657489;font-size:13px}.note{padding:13px;background:#fff4da;border-radius:8px;color:#77530d;margin:8px 0 18px}
+.panel{border:1px solid #d8e0ee;padding:16px;border-radius:12px;margin-top:18px}
+.tabrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.tab{background:#eaf0f8;color:#284260;padding:7px 11px;border-radius:7px}.tab.active{background:#1b5cbc;color:white}
+.art{position:relative;width:100%;overflow:hidden;background:#f3f5f8;border:1px solid #d8dfeb;border-radius:8px}.art img{display:block;width:100%;height:auto}
+.mark{position:absolute;border:2px solid #ef9612;background:#f8ae1959;border-radius:2px;pointer-events:none}
+.issue{background:#fff;padding:13px 15px;border:1px solid #dce3ec;border-left:4px solid #e9a034;border-radius:7px;margin-bottom:10px}
+.issue strong{display:block}.issue small{color:#778396}.pill{font-size:11px;border-radius:20px;padding:3px 8px;background:#fff0d7;color:#8d550c}
+.spaced{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.counts{font-size:13px;color:#526681}
+.hidden{display:none!important}#status{min-height:26px;color:#344f78}.alert{color:#9e3a20}.good{color:#19654e}
+@media(max-width:830px){.review,.grid{grid-template-columns:1fr}.card{padding:16px}}
+</style></head><body>
+<header><h1>Marketing Compliance Checker</h1><div>Artwork Review · Slide-by-slide Evidence · Public Demo</div></header>
+<main>
+<p class="note"><b>DEMO ONLY — NOT COMPLIANCE APPROVAL.</b> โปรดใช้ไฟล์จำลองเท่านั้น ห้ามอัปโหลด Artwork หรือ Campaign ภายในที่เป็นความลับ ผลตรวจเป็นกฎตัวอย่าง ไม่ใช่ความเห็น Compliance อย่างเป็นทางการ</p>
+<section class="card"><h2>01 — Campaign Setup</h2><div class="grid">
+<div><label>Brand</label><select id="brand"><option>KFC</option><option>KIT</option><option>Other</option></select></div>
+<div><label>Product</label><select id="product"><option value="credit_card">Credit Card</option><option value="personal_loan">Personal Loan</option><option value="nano_finance">Nano Finance</option><option value="other">Other</option></select></div>
+<div><label>Campaign</label><select id="campaign"><option value="cashback">Cashback</option><option value="installment">Installment / 0%</option><option value="premium">Premium / Voucher</option><option value="branding">Branding</option><option value="other">Other</option></select></div>
+<div><label>Channel</label><select id="channel"><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="tiktok">TikTok</option><option value="line">LINE</option><option value="banner">Banner</option></select></div></div>
+<label>Campaign Terms (optional)</label><textarea id="campaign_terms" placeholder="ใส่เงื่อนไขตัวอย่างเพื่อให้ระบบตรวจข้อความประกอบได้"></textarea></section>
+<section class="card"><h2>02 — Artwork & Caption</h2>
+<label>Artwork (PPTX / PDF / PNG / JPG / WEBP, ≤ 10 MB)</label><input id="art" type="file" accept=".pptx,.pdf,.png,.jpg,.jpeg,.webp">
+<p class="hint">PPTX จะถูกแปลงเป็นภาพสไลด์จริง · ตรวจสูงสุด 6 สไลด์/หน้าแรก · การ OCR ภาษาไทยอาจไม่สมบูรณ์</p>
+<label>Caption</label><textarea id="caption" placeholder="ข้อความ Caption ที่ต้องการตรวจ"></textarea>
+<div class="spaced"><button id="run">Run Pre-Screen + Open Slides</button><span id="status"></span></div></section>
+<section id="results" class="card hidden"><div class="spaced"><h2>03 — Screening Results แยกตามสไลด์</h2><span id="summary" class="counts"></span></div>
+<div class="tabrow" id="tabs"></div>
+<div class="review"><div><h3 id="pageTitle">Artwork</h3><div class="art" id="artframe"></div>
+<p class="hint" id="imageHint">กรอบสีส้มคือคำที่ OCR ตรวจพบและตรงกับ Evidence เท่านั้น กรณีขาดคำเตือนจะไม่มีกรอบ Highlight</p>
+</div><div><h3>Findings ของส่วนนี้</h3><div id="issues"></div></div></div>
+<details style="margin-top:18px"><summary>ข้อความ OCR ที่อ่านได้ (ตรวจสอบ/แก้ไขในไฟล์ต้นฉบับ)</summary><pre id="extracted" style="white-space:pre-wrap;overflow-wrap:anywhere;max-height:280px;overflow:auto"></pre></details>
+</section>
+</main>
+<script>
+const el=id=>document.getElementById(id);let pages=[],findings=[],active=0,runId=0,errors=[];
+function safe(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function norm(s){return String(s||'').toLowerCase().replace(/\s+/g,'')}
+function locMatches(word,evidence){const w=norm(word),e=norm(evidence);return !!(w&&e&&w.length>=2&&(e.includes(w)||w.includes(e)))}
+function input(){let a={};for(let k of ['brand','product','campaign','channel','caption','campaign_terms'])a[k]=el(k).value;return a}
+async function screen(text,part){const a=input();a.artwork_text=part==='artwork'?text:'';a.caption=part==='caption'?text:'';let r=await fetch('/api/screen',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(a)});if(!r.ok)throw Error('Screening API failed');let data=await r.json();return (data.findings||[]).filter(f=>f.material===part)}
+function highlight(words,issues){const terms=issues.map(i=>i.evidence||'').filter(Boolean);return words.filter(w=>terms.some(t=>locMatches(w.text,t)))}
+function show(index){active=index;const isCaption=index===pages.length;el('tabs').innerHTML=pages.map((p,i)=>'<button class="tab '+(i===index?'active':'')+'" data-i="'+i+'">Slide '+(i+1)+'</button>').join('')+'<button class="tab '+(isCaption?'active':'')+'" data-i="'+pages.length+'">Caption</button>';
+for(const b of el('tabs').querySelectorAll('button'))b.onclick=()=>show(Number(b.dataset.i));
+const group=findings.filter(f=>f.slide===index);el('pageTitle').textContent=isCaption?'Caption':('Slide '+(index+1));
+if(isCaption){el('artframe').innerHTML='<div style="padding:18px;white-space:pre-wrap">'+safe(el('caption').value||'ไม่มี Caption')+'</div>';el('extracted').textContent=el('caption').value;el('imageHint').textContent='Caption แสดงแยกจาก Artwork เพื่ออ่านง่าย';}
+else{const p=pages[index];const marks=highlight(p.words||[],group);el('artframe').innerHTML='<img alt="Slide '+(index+1)+'" src="'+p.image+'">'+marks.map(w=>'<span class="mark" title="'+safe(w.text)+'" style="left:'+(w.x*100)+'%;top:'+(w.y*100)+'%;width:'+(w.w*100)+'%;height:'+(w.h*100)+'%"></span>').join('');el('extracted').textContent=p.text||p.ocr_text||'';el('imageHint').textContent='Highlight จริง '+marks.length+' ตำแหน่งจากข้อความที่ OCR ตรงกับหลักฐาน; การไม่พบคำเตือนไม่มีจุดให้ Highlight';}
+el('issues').innerHTML=group.length?group.map(f=>'<article class="issue"><span class="pill">'+safe(f.status)+'</span><strong>'+safe(f.message)+'</strong>'+(f.evidence?'<p><b>ข้อความที่พบ:</b> '+safe(f.evidence)+'</p>':'<p class="muted">ไม่มีข้อความเฉพาะจุด (เช่น ขาดคำเตือน)</p>')+'<p><b>ข้อเสนอแนะ:</b> '+safe(f.suggestion||'ตรวจสอบกับ Compliance')+'</p><small>'+safe(f.rule_id)+' · Draft rule only</small></article>').join(''):'<p class="good">ไม่พบประเด็นจากกฎตัวอย่างในส่วนนี้ (ไม่ได้หมายความว่าผ่าน Compliance)</p>';
+}
+el('run').onclick=async()=>{const id=++runId;let f=el('art').files[0],btn=el('run');if(!f){alert('กรุณาเลือกไฟล์ Artwork');return}if(f.size>10000000){alert('ไฟล์เกิน 10 MB');return}
+btn.disabled=true;el('status').textContent='กำลัง Render สไลด์และทำ OCR...';el('results').classList.add('hidden');pages=[];findings=[];errors=[];
+try{let fd=new FormData();fd.append('file',f);let response=await fetch('/api/preview',{method:'POST',body:fd});let body=await response.json();if(!response.ok)throw Error(body.detail||'ไม่สามารถอ่านสไลด์ได้');if(id!==runId)return;pages=body.pages||[];if(!pages.length)throw Error('ไม่พบสไลด์ที่เปิดได้');for(let i=0;i<pages.length;i++){el('status').textContent='กำลังตรวจ Slide '+(i+1)+'/'+pages.length;try{const issues=await screen(pages[i].text||pages[i].ocr_text||'','artwork');findings.push(...issues.map(x=>({...x,slide:i})));}catch(e){errors.push('Slide '+(i+1)+': '+e.message);findings.push({slide:i,status:'not_evaluated',message:'ตรวจสไลด์นี้ไม่สำเร็จ',suggestion:'โปรดลองใหม่'});}}
+const caption=el('caption').value;if(caption.trim()){try{let issues=await screen(caption,'caption');findings.push(...issues.map(x=>({...x,slide:pages.length})));}catch(e){errors.push('Caption: '+e.message);}}
+let counts={issues:findings.filter(f=>f.status==='potential_issue').length,review:findings.filter(f=>f.status==='needs_human_review').length};el('summary').textContent=pages.length+' สไลด์ · Issues '+counts.issues+' · Human Review '+counts.review;
+el('results').classList.remove('hidden');show(0);el('status').textContent=errors.length?errors.join('; '):(body.warnings?.join('; ')||'ตรวจเสร็จแล้ว');el('results').scrollIntoView({behavior:'smooth'});
+}catch(e){el('status').textContent='ผิดพลาด: '+e.message;}finally{btn.disabled=false;}};
+</script></body></html>
