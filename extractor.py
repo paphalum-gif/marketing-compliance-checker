@@ -4,6 +4,7 @@ import os
 import subprocess
 import tempfile
 import zipfile
+import csv
 
 import fitz
 from docx import Document
@@ -32,6 +33,27 @@ def run_ocr(image):
         return result.stdout.strip()
 
 
+def image_words(image):
+    with tempfile.NamedTemporaryFile(suffix=".png") as f:
+        image.convert("RGB").save(f.name)
+        result = subprocess.run(["tesseract", f.name, "stdout", "-l", "tha+eng", "tsv"],
+                                text=True, capture_output=True, timeout=25)
+        if result.returncode:
+            return []
+        boxes = []
+        for row in csv.DictReader(io.StringIO(result.stdout), delimiter="\t"):
+            token = (row.get("text") or "").strip()
+            if not token:
+                continue
+            try:
+                x, y, w, h = (int(row[k]) for k in ("left","top","width","height"))
+                boxes.append({"page":1,"text":token,"x":x/image.width,"y":y/image.height,
+                              "w":w/image.width,"h":h/image.height})
+            except (ValueError,KeyError,ZeroDivisionError):
+                continue
+        return boxes[:700]
+
+
 def extract_picture(data):
     image = Image.open(io.BytesIO(data))
     image.load()
@@ -55,8 +77,14 @@ def extract_file(filename, data):
         raise ValueError("File must be between 1 byte and 10 MB")
     out = []
     notes = []
+    regions = []
+    pages = []
     if ext in (".png", ".jpg", ".jpeg", ".webp"):
-        out.append(extract_picture(data))
+        image = Image.open(io.BytesIO(data))
+        image.load()
+        out.append(run_ocr(image))
+        regions = image_words(image)
+        pages = [{"number":1,"kind":"image"}]
     elif ext == ".pptx":
         z = safe_zip(data)
         try:
@@ -78,7 +106,13 @@ def extract_file(filename, data):
                             chunks.append(extract_picture(shape.image.blob))
                         except Exception:
                             notes.append("Some image text on slide %d could not be read" % i)
-                out.append("[Slide %d]\n%s" % (i, "\n".join(chunks)))
+                out.append("[Slide %d]\\n%s" % (i, "\\n".join(chunks)))
+                pages.append({"number":i,"kind":"slide"})
+                for sh in slide.shapes:
+                    if sh.has_text_frame and sh.text.strip():
+                        regions.append({"page":i,"text":sh.text[:400],
+                          "x":float(sh.left/prs.slide_width),"y":float(sh.top/prs.slide_height),
+                          "w":float(sh.width/prs.slide_width),"h":float(sh.height/prs.slide_height)})
         finally:
             z.close()
         notes.append("PPTX extraction does not verify layout, visibility, or all grouped/embedded visual content")
@@ -96,7 +130,12 @@ def extract_file(filename, data):
                     pix = p.get_pixmap(matrix=fitz.Matrix(1.5, 1.5), alpha=False)
                     image = Image.open(io.BytesIO(pix.tobytes("png")))
                     text += "\n" + run_ocr(image)
-                out.append("[Page %d]\n%s" % (i + 1, text))
+                out.append("[Page %d]\\n%s" % (i + 1, text))
+                pages.append({"number":i+1,"kind":"pdf"})
+                for w in p.get_text("words")[:1000]:
+                    x0,y0,x1,y1,t,*rest=w
+                    regions.append({"page":i+1,"text":t,"x":x0/p.rect.width,
+                       "y":y0/p.rect.height,"w":(x1-x0)/p.rect.width,"h":(y1-y0)/p.rect.height})
         finally:
             pdf.close()
     elif ext == ".docx":
@@ -122,4 +161,4 @@ def extract_file(filename, data):
         notes.append("Text truncated to 40,000 characters")
     if not text:
         notes.append("No readable text found; human review required")
-    return {"text": text, "status": "extracted" if text else "not_evaluated", "warnings": notes, "file_type": ext, "units_examined": min(len(out), MAX_PARTS)}
+    return {"text": text, "status": "extracted" if text else "not_evaluated", "warnings": notes, "file_type": ext, "units_examined": min(len(out), MAX_PARTS), "regions":regions[:1600], "pages":pages[:MAX_PARTS]}
