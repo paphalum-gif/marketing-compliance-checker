@@ -18,7 +18,7 @@ p.hint,.muted{color:#657489;font-size:13px}.note{padding:13px;background:#fff4da
 .spaced{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.counts{font-size:13px;color:#526681}
 .hidden{display:none!important}#status{min-height:26px;color:#344f78}.alert{color:#9e3a20}.good{color:#19654e}
 @media(max-width:830px){.review,.grid{grid-template-columns:1fr}.card{padding:16px}}
-</style></head><body>
+.skiprow{padding:10px;background:#eef4fa;border-radius:8px;margin:10px 0}.skiprow label{display:flex;gap:8px;align-items:center;margin:0}.skiprow input{width:auto}.skipped{padding:14px;background:#edf3fa;border-radius:9px}</style></head><body>
 <header><h1>Marketing Compliance Checker</h1><div>Artwork Review · Slide-by-slide Evidence · Public Demo</div></header>
 <main>
 <p class="note"><b>DEMO ONLY — NOT COMPLIANCE APPROVAL.</b> โปรดใช้ไฟล์จำลองเท่านั้น ห้ามอัปโหลด Artwork หรือ Campaign ภายในที่เป็นความลับ ผลตรวจเป็นกฎตัวอย่าง ไม่ใช่ความเห็น Compliance อย่างเป็นทางการ</p>
@@ -34,7 +34,7 @@ p.hint,.muted{color:#657489;font-size:13px}.note{padding:13px;background:#fff4da
 <label>Caption</label><textarea id="caption" placeholder="ข้อความ Caption ที่ต้องการตรวจ"></textarea>
 <div class="spaced"><button id="run">Run Pre-Screen + Open Slides</button><span id="status"></span></div></section>
 <section id="results" class="card hidden"><div class="spaced"><h2>03 — Screening Results แยกตามสไลด์</h2><span id="summary" class="counts"></span></div>
-<div class="tabrow" id="tabs"></div>
+<div class="tabrow" id="tabs"></div><div id="skiprow" class="skiprow"><label><input type="checkbox" id="skip"> ไม่ใช่สื่อโฆษณาที่ต้องตรวจ (Cover / Thank you) — ข้ามสไลด์นี้</label><div class="muted" id="skipreason"></div></div>
 <div class="review"><div><h3 id="pageTitle">Artwork</h3><div class="art" id="artframe"></div>
 <p class="hint" id="imageHint">กรอบสีส้มคือคำที่ OCR ตรวจพบและตรงกับ Evidence เท่านั้น กรณีขาดคำเตือนจะไม่มีกรอบ Highlight</p>
 </div><div><h3>Findings ของส่วนนี้</h3><div id="issues"></div></div></div>
@@ -42,25 +42,46 @@ p.hint,.muted{color:#657489;font-size:13px}.note{padding:13px;background:#fff4da
 </section>
 </main>
 <script>
-const el=id=>document.getElementById(id);let pages=[],findings=[],active=0,runId=0,errors=[];
+const el=id=>document.getElementById(id);let pages=[],findings=[],active=0,runId=0,errors=[],scope=[];
 function safe(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function norm(s){return String(s||'').toLowerCase().replace(/\s+/g,'')}
 function locMatches(word,evidence){const w=norm(word),e=norm(evidence);return !!(w&&e&&w.length>=2&&(e.includes(w)||w.includes(e)))}
 function input(){let a={};for(let k of ['brand','product','campaign','channel','caption','campaign_terms'])a[k]=el(k).value;return a}
 async function screen(text,part){const a=input();a.artwork_text=part==='artwork'?text:'';a.caption=part==='caption'?text:'';let r=await fetch('/api/screen',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(a)});if(!r.ok)throw Error('Screening API failed');let data=await r.json();return (data.findings||[]).filter(f=>f.material===part)}
+function classifySlide(text,index,total){
+ const t=String(text||"").trim();
+ const hasOffer=/(ช้อปเลย|ผ่อน|สมัคร|โปรโมชั่น|โปรโมชัน|กู้|เงินคืน|ส่งฟรี|ชำระคืน|ลดราคา|รับสิทธิ|คลิก)/.test(t);
+ if((index===0||index===total-1)&&!hasOffer&&(/lifestyle\s*content|thank\s*you|ขอบคุณ/i.test(t)||t.length<55)){
+   return {skip:true,reason:"คาดว่าเป็น Cover / Closing Slide — สามารถยกเลิกได้"};
+ }
+ return {skip:false,reason:"อยู่ในขอบเขตตรวจข้อความโฆษณา"};
+}
+function updateCounts(){
+ const f=findings.filter(x=>x.slide>=pages.length||!scope[x.slide]?.skip);
+ el('summary').textContent=pages.length+' สไลด์ · ข้าม '+scope.filter(x=>x.skip).length+' · Issues '+f.filter(x=>x.status==='potential_issue').length+' · Human Review '+f.filter(x=>x.status==='needs_human_review').length;
+}
 function highlight(words,issues){const terms=issues.map(i=>i.evidence||'').filter(Boolean);return words.filter(w=>terms.some(t=>locMatches(w.text,t)))}
 function show(index){active=index;const isCaption=index===pages.length;el('tabs').innerHTML=pages.map((p,i)=>'<button class="tab '+(i===index?'active':'')+'" data-i="'+i+'">Slide '+(i+1)+'</button>').join('')+'<button class="tab '+(isCaption?'active':'')+'" data-i="'+pages.length+'">Caption</button>';
 for(const b of el('tabs').querySelectorAll('button'))b.onclick=()=>show(Number(b.dataset.i));
-const group=findings.filter(f=>f.slide===index);el('pageTitle').textContent=isCaption?'Caption':('Slide '+(index+1));
+const group=findings.filter(f=>f.slide===index);
+el('skiprow').classList.toggle('hidden',isCaption);
+if(!isCaption){el('skip').checked=!!scope[index]?.skip;el('skipreason').textContent=scope[index]?.reason||'';}el('pageTitle').textContent=isCaption?'Caption':('Slide '+(index+1));
 if(isCaption){el('artframe').innerHTML='<div style="padding:18px;white-space:pre-wrap">'+safe(el('caption').value||'ไม่มี Caption')+'</div>';el('extracted').textContent=el('caption').value;el('imageHint').textContent='Caption แสดงแยกจาก Artwork เพื่ออ่านง่าย';}
 else{const p=pages[index];const marks=highlight(p.words||[],group);el('artframe').innerHTML='<img alt="Slide '+(index+1)+'" src="'+p.image+'">'+marks.map(w=>'<span class="mark" title="'+safe(w.text)+'" style="left:'+(w.x*100)+'%;top:'+(w.y*100)+'%;width:'+(w.w*100)+'%;height:'+(w.h*100)+'%"></span>').join('');el('extracted').textContent=p.text||p.ocr_text||'';el('imageHint').textContent='Highlight จริง '+marks.length+' ตำแหน่งจากข้อความที่ OCR ตรงกับหลักฐาน; การไม่พบคำเตือนไม่มีจุดให้ Highlight';}
-el('issues').innerHTML=group.length?group.map(f=>'<article class="issue"><span class="pill">'+safe(f.status)+'</span><strong>'+safe(f.message)+'</strong>'+(f.evidence?'<p><b>ข้อความที่พบ:</b> '+safe(f.evidence)+'</p>':'<p class="muted">ไม่มีข้อความเฉพาะจุด (เช่น ขาดคำเตือน)</p>')+'<p><b>ข้อเสนอแนะ:</b> '+safe(f.suggestion||'ตรวจสอบกับ Compliance')+'</p><small>'+safe(f.rule_id)+' · Draft rule only</small></article>').join(''):'<p class="good">ไม่พบประเด็นจากกฎตัวอย่างในส่วนนี้ (ไม่ได้หมายความว่าผ่าน Compliance)</p>';
+el('issues').innerHTML=(!isCaption&&scope[index]?.skip)?'<div class="skipped"><strong>ไม่อยู่ในขอบเขตการตรวจ</strong><p>สไลด์นี้เป็น Cover / Closing Slide จึงไม่แสดง Findings</p><p>หากเป็นสื่อที่จะเผยแพร่ ให้ยกเลิกการข้ามสไลด์ด้านบน</p></div>':group.length?group.map(f=>'<article class="issue"><span class="pill">'+safe(f.status)+'</span><strong>'+safe(f.message)+'</strong>'+(f.evidence?'<p><b>ข้อความที่พบ:</b> '+safe(f.evidence)+'</p>':'<p class="muted">ไม่มีข้อความเฉพาะจุด (เช่น ขาดคำเตือน)</p>')+'<p><b>ข้อเสนอแนะ:</b> '+safe(f.suggestion||'ตรวจสอบกับ Compliance')+'</p><small>'+safe(f.rule_id)+' · Draft rule only</small></article>').join(''):'<p class="good">ไม่พบประเด็นจากกฎตัวอย่างในส่วนนี้ (ไม่ได้หมายความว่าผ่าน Compliance)</p>';
 }
+el('skip').onchange=async()=>{
+ if(active>=pages.length)return;
+ scope[active]={skip:el('skip').checked,reason:"ผู้ใช้กำหนดขอบเขตการตรวจเอง"};
+ const i=active;findings=findings.filter(x=>x.slide!==i);
+ if(!scope[i].skip){try{let x=await screen(pages[i].text||pages[i].ocr_text||'','artwork');findings.push(...x.map(f=>({...f,slide:i})));}catch(e){errors.push(e.message)}}
+ updateCounts();show(i);
+};
 el('run').onclick=async()=>{const id=++runId;let f=el('art').files[0],btn=el('run');if(!f){alert('กรุณาเลือกไฟล์ Artwork');return}if(f.size>10000000){alert('ไฟล์เกิน 10 MB');return}
 btn.disabled=true;el('status').textContent='กำลัง Render สไลด์และทำ OCR...';el('results').classList.add('hidden');pages=[];findings=[];errors=[];
-try{let fd=new FormData();fd.append('file',f);let response=await fetch('/api/preview',{method:'POST',body:fd});let body=await response.json();if(!response.ok)throw Error(body.detail||'ไม่สามารถอ่านสไลด์ได้');if(id!==runId)return;pages=body.pages||[];if(!pages.length)throw Error('ไม่พบสไลด์ที่เปิดได้');for(let i=0;i<pages.length;i++){el('status').textContent='กำลังตรวจ Slide '+(i+1)+'/'+pages.length;try{const issues=await screen(pages[i].text||pages[i].ocr_text||'','artwork');findings.push(...issues.map(x=>({...x,slide:i})));}catch(e){errors.push('Slide '+(i+1)+': '+e.message);findings.push({slide:i,status:'not_evaluated',message:'ตรวจสไลด์นี้ไม่สำเร็จ',suggestion:'โปรดลองใหม่'});}}
+try{let fd=new FormData();fd.append('file',f);let response=await fetch('/api/preview',{method:'POST',body:fd});let body=await response.json();if(!response.ok)throw Error(body.detail||'ไม่สามารถอ่านสไลด์ได้');if(id!==runId)return;pages=body.pages||[];scope=pages.map((p,i)=>classifySlide(p.text||p.ocr_text||'',i,pages.length));if(!pages.length)throw Error('ไม่พบสไลด์ที่เปิดได้');for(let i=0;i<pages.length;i++){if(scope[i].skip)continue;el('status').textContent='กำลังตรวจ Slide '+(i+1)+'/'+pages.length;try{const issues=await screen(pages[i].text||pages[i].ocr_text||'','artwork');findings.push(...issues.map(x=>({...x,slide:i})));}catch(e){errors.push('Slide '+(i+1)+': '+e.message);findings.push({slide:i,status:'not_evaluated',message:'ตรวจสไลด์นี้ไม่สำเร็จ',suggestion:'โปรดลองใหม่'});}}
 const caption=el('caption').value;if(caption.trim()){try{let issues=await screen(caption,'caption');findings.push(...issues.map(x=>({...x,slide:pages.length})));}catch(e){errors.push('Caption: '+e.message);}}
-let counts={issues:findings.filter(f=>f.status==='potential_issue').length,review:findings.filter(f=>f.status==='needs_human_review').length};el('summary').textContent=pages.length+' สไลด์ · Issues '+counts.issues+' · Human Review '+counts.review;
+updateCounts();
 el('results').classList.remove('hidden');show(0);el('status').textContent=errors.length?errors.join('; '):(body.warnings?.join('; ')||'ตรวจเสร็จแล้ว');el('results').scrollIntoView({behavior:'smooth'});
 }catch(e){el('status').textContent='ผิดพลาด: '+e.message;}finally{btn.disabled=false;}};
 </script></body></html>
