@@ -81,7 +81,7 @@ def read_document(filename,content):
                     logging.warning("OCR failed on page %s: %s",n+1,type(ocr_error).__name__)
                     p={"page":n+1,"image":png_data(im),"words":[],"ocr_text":""}
                     notices.append("OCR failed on slide "+str(n+1)+"; preview is still available")
-                p["text"]=native if len(native)>len(p["ocr_text"]) else p["ocr_text"]
+                p["text"]=native + "\n" + p["ocr_text"] if native else p["ocr_text"]
                 pages.append(p)
             document.close()
             return {"pages":pages,"warnings":notices}
