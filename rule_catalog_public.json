@@ -1,0 +1,776 @@
+{
+  "catalog_version": "public-abstract-v1.1",
+  "as_of": "2026-10-28",
+  "disclaimer": "Public demo only. This abstract index contains neither source policy texts nor campaign-specific templates. All rules are drafts pending Compliance sign-off.",
+  "coverage_definition": {
+    "catalog_only": "Visible as a rule family; not executed as a check",
+    "partial_demo_heuristic": "One or more loosely related demo checks exist; not complete or validated"
+  },
+  "rule_families": [
+    {
+      "id": "RL-001",
+      "title": "Effective annual rate",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-002",
+      "title": "Non-zero promotional monthly interest equivalent",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-003",
+      "title": "Lower/upper regular annual rate range",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-004",
+      "title": "Installment example assumptions",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-005",
+      "title": "Credit card warning",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-006",
+      "title": "Personal loan warning",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-007",
+      "title": "Nano finance warning",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-008",
+      "title": "Digital/other retail loan warnings",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-009",
+      "title": "Multiple credit product disclosures",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-010",
+      "title": "Artwork and caption checked separately",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-011",
+      "title": "Readable warning and disclosure",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-012",
+      "title": "Exact debt-inducement examples",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-013",
+      "title": "Contextual debt pressure wording",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-014",
+      "title": "No creditworthiness/credit bureau checks",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-015",
+      "title": "Easy or guaranteed loan approval",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-016",
+      "title": "Money pile/floating cash visuals",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-017",
+      "title": "Luxury branded goods disproportionate to amount",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-018",
+      "title": "No gifts before credit approval",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-019",
+      "title": "Brand-only RL applicability exception",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-020",
+      "title": "Rewards-only RL applicability exception",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-021",
+      "title": "Existing customer SMS/LINE credit promotions",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-022",
+      "title": "Banner/thumbnail disclosure",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-023",
+      "title": "Disclosure in same material",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "RL-024",
+      "title": "Inducement-to-use-credit advertisement definition",
+      "domain": "RL",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-001",
+      "title": "Truthful, clear and complete communication",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-002",
+      "title": "Superlative, first, and 100% claim evidence",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-003",
+      "title": "Statistics and studies claim evidence",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-004",
+      "title": "Free and hidden charge claim",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-005",
+      "title": "Unilateral changes without notice",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-006",
+      "title": "Readable terms and warnings",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-007",
+      "title": "Print text sizing",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-008",
+      "title": "Signage text ratio and contrast",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-009",
+      "title": "Audio warning clarity and pace",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-010",
+      "title": "TV warning timing and size",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-011",
+      "title": "Illegal or harmful advertising content",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-012",
+      "title": "Lucky draw permit",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-013",
+      "title": "Lucky draw conditions and eligibility",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-014",
+      "title": "Prize types, number and value",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-015",
+      "title": "Draw date, location and region",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-016",
+      "title": "Giveaway conditions and timing",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-017",
+      "title": "Gift type and fulfilment details",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-018",
+      "title": "Insurance ad truthfulness",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-019",
+      "title": "Insurance warnings",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-020",
+      "title": "No-health-check insurance claim",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-021",
+      "title": "Insurance broker and insurer identity",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-022",
+      "title": "Insurer sign-off workflow",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-023",
+      "title": "Regulated category special approval",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-024",
+      "title": "Rights to reference external text",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-025",
+      "title": "Image usage rights",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-026",
+      "title": "Legal and Compliance final sign-off",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-027",
+      "title": "Approval routing and SLA",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "AD-028",
+      "title": "Material terms not displaced by fine print",
+      "domain": "AD",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-001",
+      "title": "Classify platform versus campaign versus acquisition",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-002",
+      "title": "Use verified campaign and product master",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-003",
+      "title": "Dates only when time-bounded campaign",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-004",
+      "title": "Cashback calculation and limits",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-005",
+      "title": "Cashback timing and cancellation",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-006",
+      "title": "Registration confirmation before spend",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-007",
+      "title": "Invitation-only eligibility",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-008",
+      "title": "Premium fulfilment and limits",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-009",
+      "title": "Voucher/eCoupon redemption and expiry",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-010",
+      "title": "Points earning and redemption",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-011",
+      "title": "0% installment offer applicability",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-012",
+      "title": "Special interest equivalence",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-013",
+      "title": "SMS/app registration and terms",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-014",
+      "title": "Top spender ranking and claims",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-015",
+      "title": "Lucky draw terms and permit",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-016",
+      "title": "Eligible and excluded transactions",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-017",
+      "title": "Mutual fund transaction exclusions",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-018",
+      "title": "0% Pay Later special conditions",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-019",
+      "title": "New member benefits",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-020",
+      "title": "Portfolio limit and special rates",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-021",
+      "title": "Cashback plus gift combinations",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "CP-022",
+      "title": "Discount per transaction and cumulative",
+      "domain": "CP",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "OPS-001",
+      "title": "Structured summary and risk outputs",
+      "domain": "OPS",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "OPS-002",
+      "title": "Thai business-readable suggestions",
+      "domain": "OPS",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "OPS-003",
+      "title": "Assumptions and uncertainty",
+      "domain": "OPS",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "OPS-004",
+      "title": "Pre-screening-only disclaimer",
+      "domain": "OPS",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "OPS-005",
+      "title": "Privacy and sensitive data",
+      "domain": "OPS",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "partial_demo_heuristic",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "OPS-006",
+      "title": "Rule version and evidence traceability",
+      "domain": "OPS",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "OPS-007",
+      "title": "Unreadable OCR must not be considered a pass",
+      "domain": "OPS",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "OPS-008",
+      "title": "Cover/presentation-slide scope",
+      "domain": "OPS",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    },
+    {
+      "id": "OPS-009",
+      "title": "AI test examples not approved policy",
+      "domain": "OPS",
+      "status": "draft_pending_compliance_signoff",
+      "automated": "catalog_only",
+      "public_source": "general_principle_summary_no_internal_source_text"
+    }
+  ],
+  "demo_rule_to_families": {
+    "RL-DEMO-004": [
+      "RL-012",
+      "RL-013"
+    ],
+    "RL-DEMO-005": [
+      "RL-014",
+      "RL-015"
+    ],
+    "AD-DEMO-002": [
+      "AD-002"
+    ],
+    "AD-DEMO-003": [
+      "AD-005"
+    ],
+    "RL-DEMO-002": [
+      "RL-005",
+      "RL-006",
+      "RL-010"
+    ],
+    "TC-DEMO-002": [
+      "CP-003",
+      "CP-011"
+    ],
+    "AD-DEMO-004": [
+      "AD-001",
+      "CP-011"
+    ],
+    "PLATFORM-DEMO-005": [
+      "AD-004"
+    ],
+    "AD-DEMO-005": [
+      "AD-004"
+    ],
+    "RL-DEMO-011": [
+      "RL-018"
+    ],
+    "PROMO-DEMO-001": [
+      "AD-016",
+      "AD-017"
+    ],
+    "AD-DEMO-007": [
+      "AD-001"
+    ],
+    "TC-DEMO-001": [
+      "CP-004"
+    ],
+    "PROMO-DEMO-002": [
+      "CP-006"
+    ],
+    "AD-DEMO-008": [
+      "AD-028"
+    ],
+    "PRIVACY-DEMO-001": [
+      "OPS-005"
+    ]
+  },
+  "template_family_count": 62,
+  "template_category_summary": [
+    {
+      "category": "Cashback and credit back",
+      "variants": 8
+    },
+    {
+      "category": "Rewards points",
+      "variants": 9
+    },
+    {
+      "category": "Premiums, gifts and vouchers",
+      "variants": 13
+    },
+    {
+      "category": "New member programs",
+      "variants": 6
+    },
+    {
+      "category": "Discounts and privileges",
+      "variants": 4
+    },
+    {
+      "category": "Installments and rates",
+      "variants": 4
+    },
+    {
+      "category": "Registration and app messaging",
+      "variants": 3
+    },
+    {
+      "category": "Lucky draw and top spender",
+      "variants": 3
+    },
+    {
+      "category": "Transaction exclusions and eligibility",
+      "variants": 4
+    },
+    {
+      "category": "Portfolio and account offers",
+      "variants": 8
+    }
+  ],
+  "security_note": "Internal source workbook and template wording intentionally excluded from public repository."
+}
