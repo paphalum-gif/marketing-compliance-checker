@@ -86,3 +86,9 @@ async def preview_slides(file:UploadFile=File(...)):
 def review_home():
  with open("ui.html",encoding="utf-8") as f:
   return HTMLResponse(f.read(),headers={"Cache-Control":"no-store"})
+
+@app.get("/api/rule-catalog")
+def rule_catalog():
+ import json
+ with open("rule_catalog_public.json",encoding="utf-8") as f:
+  return json.load(f)
