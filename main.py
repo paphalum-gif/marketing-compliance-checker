@@ -19,6 +19,7 @@ class Check(BaseModel):
  brand:str="KFC"
  product:str="credit_card"
  campaign:str="cashback"
+ communication_intent:str="unspecified"
  channel:str="facebook"
  caption:str=""
  artwork_text:str=""
