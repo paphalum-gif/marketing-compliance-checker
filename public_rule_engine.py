@@ -4,7 +4,7 @@ These checks are illustrative; official rule approval and product master are req
 """
 import re
 
-VERSION="public-demo-rules-0.6"
+VERSION="public-demo-rules-0.7"
 FINANCIAL={"credit_card","personal_loan","nano_finance","digital_loan","installment"}
 SOCIAL={"facebook","instagram","tiktok"}
 PLATFORM_INTENTS={"platform_awareness","evergreen_benefit"}
@@ -78,14 +78,19 @@ def evaluate_text(text,material,context):
           "source":"Illustrative public demo guideline — not approved Compliance policy"
         })
     # These examples are linguistic pre-screen signals, not exhaustive prohibited phrase lists.
-    debt=pick(text,["ของมันต้องมี อยากได้ต้องได้","ช็อปหนักแค่ไหนก็รวยเหมือนเดิม",
+    # Only explicitly matched wording is reported as evidence. Screening is
+    # independent of Platform Awareness vs Campaign Promotion.
+    debt=pick(text,[
+      "ของมันต้องมี อยากได้ต้องได้","ช็อปหนักแค่ไหนก็รวยเหมือนเดิม",
       "หรูก่อน ค่อยผ่อนทีหลัง","ไฮโซก่อน ค่อยผ่อนทีหลัง",
-      "ไม่ต้องรอเก็บเงินครบ","ของมันต้องมี!"])
-    if debt:
-        emit("RL-DEMO-004","Responsible lending","potential_issue",
-          "⚠ พบข้อความที่อาจกระตุ้นการใช้เครดิตเกินความจำเป็น",
-          "ปรับให้เป็นข้อมูลเกี่ยวกับทางเลือกการชำระและเงื่อนไขจริง หลีกเลี่ยงการเร่งให้ซื้อก่อนประเมินความสามารถในการชำระ",
-          debt,"high",alternative="เลือกแบ่งชำระตามเงื่อนไขที่กำหนดและความเหมาะสม")
+      "ไม่ต้องรอเก็บเงินครบ","ช้อปให้สุดแบบไม่สะดุด",
+      "รับของไปก่อน","ของมันต้องมี"
+    ])
+    if debt and (product in FINANCIAL or clear_installment_claim(text) or "ผ่อน" in normalized(text)):
+        emit("RL-DEMO-004","Responsible Lending / Avoid encouraging excessive debt","potential_issue",
+          "⚠ พบถ้อยคำที่อาจเร่งให้ซื้อหรือใช้เครดิตก่อนพิจารณาความสามารถในการชำระ",
+          "ทบทวนข้อความนี้โดยคำนึงถึงบริบทของการผ่อนชำระ หากต้องการสื่อสารฟีเจอร์ ให้เน้นรายละเอียดการใช้งานและการวางแผนชำระแทนการกระตุ้นให้รีบซื้อ แล้วส่งให้ Compliance พิจารณา",
+          debt,"high",alternative="เลือกซื้อและแบ่งชำระตามเงื่อนไขที่กำหนด โดยคำนึงถึงความสามารถในการชำระคืน")
     approvals=pick(text,["ใครๆ ก็กู้ได้","ใคร ๆ ก็กู้ได้","ไม่เช็คเครดิตบูโร","ติดบูโรก็กู้ได้",
       "ไม่ตรวจเครดิต","อนุมัติ 100%","อนุมัติแน่นอน","guaranteed approval","100% approved","รับเงินสดได้ทันที"])
     if approvals:
