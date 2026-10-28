@@ -4,9 +4,29 @@ These checks are illustrative; official rule approval and product master are req
 """
 import re
 
-VERSION="public-demo-rules-0.4"
+VERSION="public-demo-rules-0.5"
 FINANCIAL={"credit_card","personal_loan","nano_finance","digital_loan","installment"}
 SOCIAL={"facebook","instagram","tiktok"}
+PLATFORM_INTENTS={"platform_awareness","evergreen_benefit"}
+VALID_INTENTS=PLATFORM_INTENTS|{"campaign_promotion","product_acquisition","unspecified"}
+
+def context_type(context):
+    """User-selected communication objective is stronger than OCR-based inference."""
+    intent=context.get("communication_intent","unspecified")
+    if intent not in VALID_INTENTS: intent="unspecified"
+    return intent
+
+def is_explicit_campaign(context):
+    return context_type(context)=="campaign_promotion"
+
+def clear_installment_claim(text):
+    """Do not mistake the feature name '0% Outlet' for a 0% offer claim."""
+    n=normalized(text)
+    return bool(re.search(r"ผ่อน.{0,34}0%|0%.{0,18}ผ่อน|แบ่งชำระ.{0,20}0%|ดอกเบี้ย0%",n))
+
+def timeline_in_text(text):
+    return bool(re.search(r"(ระหว่างวันที่|ตั้งแต่วันที่|ถึงวันที่|หมดเขต|เฉพาะวันที่|เฉพาะช่วง|วันนี้เท่านั้น|limited.time|until\s+\d)",text,re.I))
+
 
 def normalized(text):
     return re.sub(r"\s+","",(text or "").lower())
@@ -25,6 +45,9 @@ def evaluate_text(text,material,context):
     campaign=context.get("campaign","other")
     channel=context.get("channel","other")
     brief=context.get("campaign_terms","")
+    intent=context_type(context)
+    is_platform=intent in PLATFORM_INTENTS
+    campaign_mode=is_explicit_campaign(context)
     n=normalized(text)
     results=[]
     def emit(rule,principle,status,message,suggestion,evidence="",severity="medium",priority="must_fix",alternative=""):
@@ -69,24 +92,46 @@ def evaluate_text(text,material,context):
               "ยังตรวจไม่พบองค์ประกอบคำเตือนสินเชื่อในข้อความที่อ่านได้ของส่วนนี้",
               "ตรวจคำเตือนที่ต้องใช้ตามผลิตภัณฑ์และช่องทางกับ Rule Set ที่ผ่านการรับรอง โดย Artwork และ Caption ต้องประเมินแยกกัน; หากข้อความอยู่ในภาพเล็กมากให้ตรวจด้วยสายตา",
               "","medium")
-    zero="0%" in n or "ผ่อนศูนย์เปอร์เซ็นต์" in n
+    zero=clear_installment_claim(text)
     if zero and not brief.strip():
-        emit("TC-DEMO-002","Clear and complete offer conditions","needs_human_review",
-          "โฆษณากล่าวถึงผ่อน 0% แต่ยังไม่มีข้อมูลแคมเปญสำหรับยืนยันเงื่อนไข",
-          "กรอกข้อมูลจาก Campaign Brief ที่ยืนยันแล้ว: ระยะเวลาผ่อน ร้านค้า/สินค้า/บัตรที่ร่วมรายการ ช่วงเวลา ยอดขั้นต่ำ และข้อยกเว้น (เฉพาะข้อที่ใช้จริง) แล้วตรวจซ้ำ",
-          "0%","medium")
+        if is_platform:
+            emit("PLATFORM-DEMO-002","Feature claim accuracy","needs_human_review",
+              "พบการสื่อสารฟีเจอร์ผ่อน 0% ของแพลตฟอร์ม แต่ยังไม่มีข้อมูลยืนยันขอบเขตการใช้งาน",
+              "ตรวจว่าฟีเจอร์ผ่อน 0% ใช้ได้กับร้านค้า สินค้า บัตร และจำนวนเดือนใดตามข้อเท็จจริง หากมีข้อจำกัดที่มีผลต่อการตัดสินใจควรสื่อสารให้ชัดเจน โดยไม่จำเป็นต้องระบุวันเริ่ม–สิ้นสุดสำหรับฟีเจอร์ที่ให้บริการต่อเนื่อง",
+              "0%","medium",priority="nice_to_improve")
+        elif campaign_mode:
+            emit("TC-DEMO-002","Limited-time campaign terms","needs_human_review",
+              "พบข้อความผ่อน 0% ในแคมเปญส่งเสริมการขาย แต่ยังไม่มีรายละเอียดแคมเปญที่ยืนยันแล้ว",
+              "เพิ่มเงื่อนไขแคมเปญที่ใช้จริง เช่น ช่วงเวลาโปรโมชัน ระยะเวลาผ่อน ผู้มีสิทธิ ร้านค้า/สินค้าที่ร่วมรายการ และข้อยกเว้น แล้วตรวจซ้ำ",
+              "0%","medium")
+        else:
+            emit("OFFER-DEMO-002","Offer type clarification","needs_human_review",
+              "พบข้อความผ่อน 0% แต่ระบบยังไม่ทราบว่าเป็นฟีเจอร์ประจำหรือแคมเปญชั่วคราว",
+              "เลือกวัตถุประสงค์การสื่อสารให้ถูกต้องก่อน: หากเป็นฟีเจอร์ประจำให้ตรวจสิทธิและข้อจำกัดของฟีเจอร์ หากเป็นแคมเปญชั่วคราวจึงตรวจช่วงเวลาโปรโมชันด้วย",
+              "0%","medium")
     if zero and pick(text,["ทุกชิ้นทั้งร้าน","ทุกร้าน","ทุกสินค้า","ทุกชิ้น"]):
         broad=pick(text,["ทุกชิ้นทั้งร้าน","ทุกร้าน","ทุกสินค้า","ทุกชิ้น"])
-        emit("AD-DEMO-004","Truthful offer scope","needs_human_review",
-          "คำโฆษณาครอบคลุมกว้าง อาจทำให้เข้าใจว่าร่วมรายการทุกสินค้าโดยไม่มีข้อยกเว้น",
-          "เทียบข้อความกับรายการร้านค้า/สินค้าที่ร่วมโปรโมชั่น หากมีข้อยกเว้นให้ระบุเงื่อนไขหรือปรับเป็นข้อความเฉพาะเจาะจง",
+        emit("AD-DEMO-004","Truthful feature or offer scope","needs_human_review",
+          "ข้อความอาจทำให้เข้าใจว่าใช้สิทธิผ่อน 0% ได้กับสินค้าหรือร้านค้าทุกแห่ง",
+          "ตรวจว่าฟีเจอร์หรือข้อเสนอครอบคลุมจริงตามคำกล่าวอ้างหรือไม่ หากมีร้านค้า สินค้า หรือบัตรที่ไม่ร่วมรายการ ให้ระบุข้อจำกัดตามจริง",
           broad,"medium")
-    free=pick(text,["ฟรี","ไม่มีค่าใช้จ่าย","free of charge"])
-    if free:
-        emit("AD-DEMO-005","No hidden fees / fair advertising","needs_human_review",
-          "พบคำว่า 'ฟรี' หรือ 'ไม่มีค่าใช้จ่าย' ซึ่งต้องตรวจว่ามีค่าใช้จ่ายหรือเงื่อนไขเพิ่มเติมหรือไม่",
-          "ตรวจค่าใช้จ่ายที่เกิดขึ้นจริงและเงื่อนไขการรับสิทธิ หากต้องซื้อ/ใช้จ่ายก่อน ต้องระบุเงื่อนไขนั้นอย่างชัดเจน",
-          free,"medium")
+    shipping=pick(text,["ส่งฟรี","จัดส่งฟรี","free shipping"])
+    if shipping and not brief.strip():
+        emit("PLATFORM-DEMO-005" if is_platform else "AD-DEMO-005",
+          "Delivery benefit claim verification","needs_human_review",
+          "มีคำกล่าวอ้างว่าจัดส่งฟรี ซึ่งต้องตรวจความถูกต้องของสิทธิการจัดส่ง",
+          "ตรวจว่าการส่งฟรีใช้กับทุกคำสั่งซื้อจริงหรือไม่ มีขั้นต่ำ พื้นที่หรือสินค้ายกเว้นหรือไม่ หากเป็นสิทธิประจำของแพลตฟอร์ม ไม่ต้องใส่ช่วงเวลาแคมเปญ",
+          shipping,"medium",priority="nice_to_improve" if is_platform else "must_fix")
+    elif not shipping:
+        free=pick(text,["ไม่มีค่าใช้จ่าย","free of charge","รับฟรี"])
+        if free and not brief.strip():
+            emit("AD-DEMO-005","No hidden fees / fair advertising","needs_human_review",
+              "พบการกล่าวอ้างว่าไม่มีค่าใช้จ่าย ต้องตรวจว่าผู้ใช้ไม่ถูกเรียกเก็บค่าใช้จ่ายตามข้อความที่ระบุจริง",
+              "ตรวจค่าใช้จ่ายและเงื่อนไขที่เกิดขึ้นจริง แล้วระบุข้อจำกัดที่มีผลต่อการตัดสินใจ โดยไม่เพิ่มข้อกำหนดเรื่องช่วงเวลาเมื่อไม่ใช่แคมเปญ",
+              free,"medium")
+    if campaign_mode and zero and not brief.strip() and not timeline_in_text(text):
+        # Already included in TC-DEMO-002 as campaign-specific term guidance.
+        pass
     gift=pick(text,["สมัครก็รับทันที","เพียงสมัครรับทันที","สมัครปุ๊บรับเลย"])
     if gift and product in FINANCIAL:
         emit("RL-DEMO-011","No pre-approval incentive","potential_issue",
@@ -127,16 +172,19 @@ def evaluate_text(text,material,context):
 
 def evaluate_submission(req):
     findings=[]
+    context=req.model_dump() if hasattr(req,"model_dump") else (req.dict() if hasattr(req,"dict") else req)
     for material, text in (("artwork",req.artwork_text),("caption",req.caption)):
-        findings.extend(evaluate_text(text,material,req.dict() if hasattr(req,"dict") else req))
+        findings.extend(evaluate_text(text,material,context))
     total={"potential_issue":sum(f["status"]=="potential_issue" for f in findings),
            "needs_human_review":sum(f["status"]=="needs_human_review" for f in findings),
            "not_evaluated":sum(f["status"]=="not_evaluated" for f in findings)}
     risk="high" if any(f["severity"]=="high" for f in findings) else ("medium" if findings else "not_assessed")
     return {"mode":"DEMO ONLY — NOT APPROVAL","rule_version":VERSION,"risk_level":risk,
         "counts":{"issues":total["potential_issue"],"needs_review":total["needs_human_review"],"not_evaluated":total["not_evaluated"]},
+        "communication_context":{"intent":context_type(context),"is_time_limited_campaign":is_explicit_campaign(context),
+            "reason":"ใช้วัตถุประสงค์การสื่อสารที่เลือกเพื่อระบุว่ากฎเรื่องช่วงเวลาแคมเปญมีผลหรือไม่"},
         "findings":findings,
         "summary_assessment":"เป็นการตรวจเบื้องต้นตามกฎตัวอย่าง ไม่สามารถยืนยันว่าโฆษณาผ่าน Compliance",
-        "assumptions":["ตรวจตามประเภทผลิตภัณฑ์/แคมเปญ/ช่องทางที่ผู้ใช้เลือก","OCR อาจไม่อ่านข้อความบนภาพได้ครบ"],
+        "assumptions":["ตรวจตามประเภทผลิตภัณฑ์/วัตถุประสงค์การสื่อสาร/ช่องทางที่ผู้ใช้เลือก","OCR อาจไม่อ่านข้อความบนภาพได้ครบ"],
         "disclaimer":"This assessment is a preliminary compliance screening based on general principles and does not replace formal Compliance or Legal approval.",
         "coverage":{"ai":False,"policy_approved":False,"full_rule_catalog":False,"ocr":True}}
