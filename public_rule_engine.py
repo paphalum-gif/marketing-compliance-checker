@@ -4,17 +4,37 @@ These checks are illustrative; official rule approval and product master are req
 """
 import re
 
-VERSION="public-demo-rules-0.5"
+VERSION="public-demo-rules-0.6"
 FINANCIAL={"credit_card","personal_loan","nano_finance","digital_loan","installment"}
 SOCIAL={"facebook","instagram","tiktok"}
 PLATFORM_INTENTS={"platform_awareness","evergreen_benefit"}
 VALID_INTENTS=PLATFORM_INTENTS|{"campaign_promotion","product_acquisition","unspecified"}
 
 def context_type(context):
-    """User-selected communication objective is stronger than OCR-based inference."""
+    """Prefer explicit user intent; otherwise infer from the whole creative, not a single OCR fragment."""
     intent=context.get("communication_intent","unspecified")
-    if intent not in VALID_INTENTS: intent="unspecified"
-    return intent
+    if intent in VALID_INTENTS and intent!="unspecified":
+        return intent
+    combined=normalized(" ".join([
+       context.get("document_context",""), context.get("artwork_text",""), context.get("caption","")
+    ]))
+    explicit_time=any(token in combined for token in (
+        "ระหว่างวันที่","ตั้งแต่วันที่","หมดเขต","สิ้นสุดโปร","เฉพาะวันที่",
+        "วันนี้เท่านั้น","ดีลจำกัดเวลา","limitedtime","endson","flashsale"
+    ))
+    platform_signals=sum(token in combined for token in (
+        "ฟีเจอร์","แพลตฟอร์ม","บนแอป","ผ่านแอป","0%outlet",
+        "platform","feature","ใช้บริการผ่าน","ใช้งานบนแอป","การใช้งาน"
+    ))
+    promotional_signals=sum(token in combined for token in (
+        "รับเครดิตเงินคืน","สะสมยอดรับ","ลุ้นรางวัล","ลงทะเบียนรับสิทธิ์",
+        "โปรเฉพาะ","โปรโมชันพิเศษ","promotionperiod","campaignperiod"
+    ))
+    if explicit_time or promotional_signals>=2:
+        return "campaign_promotion"
+    if platform_signals>=2 and promotional_signals==0:
+        return "platform_awareness"
+    return "unspecified"
 
 def is_explicit_campaign(context):
     return context_type(context)=="campaign_promotion"
@@ -93,30 +113,21 @@ def evaluate_text(text,material,context):
               "ตรวจคำเตือนที่ต้องใช้ตามผลิตภัณฑ์และช่องทางกับ Rule Set ที่ผ่านการรับรอง โดย Artwork และ Caption ต้องประเมินแยกกัน; หากข้อความอยู่ในภาพเล็กมากให้ตรวจด้วยสายตา",
               "","medium")
     zero=clear_installment_claim(text)
-    if zero and not brief.strip():
-        if is_platform:
-            emit("PLATFORM-DEMO-002","Feature claim accuracy","needs_human_review",
-              "พบการสื่อสารฟีเจอร์ผ่อน 0% ของแพลตฟอร์ม แต่ยังไม่มีข้อมูลยืนยันขอบเขตการใช้งาน",
-              "ตรวจว่าฟีเจอร์ผ่อน 0% ใช้ได้กับร้านค้า สินค้า บัตร และจำนวนเดือนใดตามข้อเท็จจริง หากมีข้อจำกัดที่มีผลต่อการตัดสินใจควรสื่อสารให้ชัดเจน โดยไม่จำเป็นต้องระบุวันเริ่ม–สิ้นสุดสำหรับฟีเจอร์ที่ให้บริการต่อเนื่อง",
-              "0%","medium",priority="nice_to_improve")
-        elif campaign_mode:
-            emit("TC-DEMO-002","Limited-time campaign terms","needs_human_review",
-              "พบข้อความผ่อน 0% ในแคมเปญส่งเสริมการขาย แต่ยังไม่มีรายละเอียดแคมเปญที่ยืนยันแล้ว",
-              "เพิ่มเงื่อนไขแคมเปญที่ใช้จริง เช่น ช่วงเวลาโปรโมชัน ระยะเวลาผ่อน ผู้มีสิทธิ ร้านค้า/สินค้าที่ร่วมรายการ และข้อยกเว้น แล้วตรวจซ้ำ",
-              "0%","medium")
-        else:
-            emit("OFFER-DEMO-002","Offer type clarification","needs_human_review",
-              "พบข้อความผ่อน 0% แต่ระบบยังไม่ทราบว่าเป็นฟีเจอร์ประจำหรือแคมเปญชั่วคราว",
-              "เลือกวัตถุประสงค์การสื่อสารให้ถูกต้องก่อน: หากเป็นฟีเจอร์ประจำให้ตรวจสิทธิและข้อจำกัดของฟีเจอร์ หากเป็นแคมเปญชั่วคราวจึงตรวจช่วงเวลาโปรโมชันด้วย",
-              "0%","medium")
-    if zero and pick(text,["ทุกชิ้นทั้งร้าน","ทุกร้าน","ทุกสินค้า","ทุกชิ้น"]):
+    if zero and not brief.strip() and campaign_mode:
+        emit("TC-DEMO-002","Limited-time campaign terms","needs_human_review",
+          "พบข้อความผ่อน 0% ในแคมเปญที่มีระยะเวลา แต่ยังไม่มีข้อมูลเงื่อนไขที่ยืนยันแล้ว",
+          "ตรวจและระบุระยะเวลาโปรโมชั่น รวมถึงสิทธิที่ร่วมรายการตาม Campaign Brief จริง",
+          "0%","medium")
+    # For platform/always-on or unspecified context, missing campaign dates
+    # are NOT a finding. Absence of a Campaign Brief is not proof of a violation.
+    if zero and campaign_mode and pick(text,["ทุกชิ้นทั้งร้าน","ทุกร้าน","ทุกสินค้า","ทุกชิ้น"]):
         broad=pick(text,["ทุกชิ้นทั้งร้าน","ทุกร้าน","ทุกสินค้า","ทุกชิ้น"])
         emit("AD-DEMO-004","Truthful feature or offer scope","needs_human_review",
           "ข้อความอาจทำให้เข้าใจว่าใช้สิทธิผ่อน 0% ได้กับสินค้าหรือร้านค้าทุกแห่ง",
           "ตรวจว่าฟีเจอร์หรือข้อเสนอครอบคลุมจริงตามคำกล่าวอ้างหรือไม่ หากมีร้านค้า สินค้า หรือบัตรที่ไม่ร่วมรายการ ให้ระบุข้อจำกัดตามจริง",
           broad,"medium")
     shipping=pick(text,["ส่งฟรี","จัดส่งฟรี","free shipping"])
-    if shipping and not brief.strip():
+    if shipping and not brief.strip() and campaign_mode:
         emit("PLATFORM-DEMO-005" if is_platform else "AD-DEMO-005",
           "Delivery benefit claim verification","needs_human_review",
           "มีคำกล่าวอ้างว่าจัดส่งฟรี ซึ่งต้องตรวจความถูกต้องของสิทธิการจัดส่ง",
@@ -124,7 +135,7 @@ def evaluate_text(text,material,context):
           shipping,"medium",priority="nice_to_improve" if is_platform else "must_fix")
     elif not shipping:
         free=pick(text,["ไม่มีค่าใช้จ่าย","free of charge","รับฟรี"])
-        if free and not brief.strip():
+        if free and not brief.strip() and campaign_mode:
             emit("AD-DEMO-005","No hidden fees / fair advertising","needs_human_review",
               "พบการกล่าวอ้างว่าไม่มีค่าใช้จ่าย ต้องตรวจว่าผู้ใช้ไม่ถูกเรียกเก็บค่าใช้จ่ายตามข้อความที่ระบุจริง",
               "ตรวจค่าใช้จ่ายและเงื่อนไขที่เกิดขึ้นจริง แล้วระบุข้อจำกัดที่มีผลต่อการตัดสินใจ โดยไม่เพิ่มข้อกำหนดเรื่องช่วงเวลาเมื่อไม่ใช่แคมเปญ",
@@ -179,7 +190,15 @@ def evaluate_submission(req):
            "needs_human_review":sum(f["status"]=="needs_human_review" for f in findings),
            "not_evaluated":sum(f["status"]=="not_evaluated" for f in findings)}
     risk="high" if any(f["severity"]=="high" for f in findings) else ("medium" if findings else "not_assessed")
+    soft_notes=[]
+    if context_type(context) in PLATFORM_INTENTS:
+        whole=normalized(context.get("document_context","")+" "+context.get("artwork_text","")+" "+context.get("caption",""))
+        if any(x in whole for x in ("ทุกชิ้นทั้งร้าน","ทุกร้าน","ทุกสินค้า")):
+            soft_notes.append("ยืนยันกับทีมเจ้าของฟีเจอร์ว่าข้อความครอบคลุมทุกสินค้า/ร้านค้าตรงตามบริการจริง (ไม่ใช่ข้อผิดพลาดที่ตรวจพบ)")
+        if "ส่งฟรี" in whole:
+            soft_notes.append("ยืนยันกับทีมเจ้าของฟีเจอร์ว่าสิทธิส่งฟรีและข้อจำกัดตรงตามบริการจริง (ไม่ใช่ข้อผิดพลาดที่ตรวจพบ)")
     return {"mode":"DEMO ONLY — NOT APPROVAL","rule_version":VERSION,"risk_level":risk,
+        "non_blocking_verifications":soft_notes,
         "counts":{"issues":total["potential_issue"],"needs_review":total["needs_human_review"],"not_evaluated":total["not_evaluated"]},
         "communication_context":{"intent":context_type(context),"is_time_limited_campaign":is_explicit_campaign(context),
             "reason":"ใช้วัตถุประสงค์การสื่อสารที่เลือกเพื่อระบุว่ากฎเรื่องช่วงเวลาแคมเปญมีผลหรือไม่"},
