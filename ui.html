@@ -27,7 +27,7 @@ p.hint,.muted{color:#657489;font-size:13px}.note{padding:13px;background:#fff4da
 <div><label>Product</label><select id="product"><option value="credit_card">Credit Card</option><option value="personal_loan">Personal Loan</option><option value="nano_finance">Nano Finance</option><option value="other">Other</option></select></div>
 <div><label>Campaign</label><select id="campaign"><option value="cashback">Cashback</option><option value="installment">Installment / 0%</option><option value="premium">Premium / Voucher</option><option value="branding">Branding</option><option value="other">Other</option></select></div>
 <div><label>Channel</label><select id="channel"><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="tiktok">TikTok</option><option value="line">LINE</option><option value="banner">Banner</option></select></div></div>
-<label>Campaign Terms (optional)</label><textarea id="campaign_terms" placeholder="ใส่เงื่อนไขตัวอย่างเพื่อให้ระบบตรวจข้อความประกอบได้"></textarea></section>
+<label>วัตถุประสงค์การสื่อสาร (ใช้เลือกกฎที่เกี่ยวข้อง)</label><select id="communication_intent"><option value="unspecified">ยังไม่ระบุ — ให้ตรวจสอบประเภทการสื่อสาร</option><option value="platform_awareness">แนะนำแพลตฟอร์ม / ฟีเจอร์ (Platform Awareness)</option><option value="evergreen_benefit">สิทธิประโยชน์ที่มีต่อเนื่อง (Always-on Benefit)</option><option value="campaign_promotion">โปรโมชันมีระยะเวลา (Campaign Promotion)</option><option value="product_acquisition">ชวนสมัครผลิตภัณฑ์ (Product Acquisition)</option></select><p class="hint">การกล่าวถึง 0% ไม่ได้แปลว่ามีโปรโมชันกำหนดวันเริ่ม–สิ้นสุดเสมอ</p><label>Campaign Terms (optional)</label><textarea id="campaign_terms" placeholder="ใส่เงื่อนไขตัวอย่างเพื่อให้ระบบตรวจข้อความประกอบได้"></textarea></section>
 <section class="card"><h2>02 — Artwork & Caption</h2>
 <label>Artwork (PPTX / PDF / PNG / JPG / WEBP, ≤ 10 MB)</label><input id="art" type="file" accept=".pptx,.pdf,.png,.jpg,.jpeg,.webp">
 <p class="hint">PPTX จะถูกแปลงเป็นภาพสไลด์จริง · ตรวจสูงสุด 6 สไลด์/หน้าแรก · การ OCR ภาษาไทยอาจไม่สมบูรณ์</p>
@@ -46,7 +46,7 @@ const el=id=>document.getElementById(id);let pages=[],findings=[],active=0,runId
 function safe(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function norm(s){return String(s||'').toLowerCase().replace(/\s+/g,'')}
 function locMatches(word,evidence){const w=norm(word),e=norm(evidence);return !!(w&&e&&w.length>=2&&(e.includes(w)||w.includes(e)))}
-function input(){let a={};for(let k of ['brand','product','campaign','channel','caption','campaign_terms'])a[k]=el(k).value;return a}
+function input(){let a={};for(let k of ['brand','product','campaign','channel','communication_intent','caption','campaign_terms'])a[k]=el(k).value;return a}
 async function screen(text,part){const a=input();a.artwork_text=part==='artwork'?text:'';a.caption=part==='caption'?text:'';let r=await fetch('/api/screen',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(a)});if(!r.ok)throw Error('Screening API failed');let data=await r.json();return (data.findings||[]).filter(f=>f.material===part)}
 function classifySlide(text,index,total){
  const t=String(text||"").trim();
