@@ -47,7 +47,7 @@ function safe(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&
 function norm(s){return String(s||'').toLowerCase().replace(/\s+/g,'')}
 function locMatches(word,evidence){const w=norm(word),e=norm(evidence);return !!(w&&e&&w.length>=2&&(e.includes(w)||w.includes(e)))}
 function input(){let a={};for(let k of ['brand','product','campaign','channel','communication_intent','caption','campaign_terms'])a[k]=el(k).value;return a}
-async function screen(text,part){const a=input();a.artwork_text=part==='artwork'?text:'';a.caption=part==='caption'?text:'';let r=await fetch('/api/screen',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(a)});if(!r.ok)throw Error('Screening API failed');let data=await r.json();return (data.findings||[]).filter(f=>f.material===part)}
+async function screen(text,part){const a=input();a.artwork_text=part==='artwork'?text:'';a.caption=part==='caption'?text:'';a.document_context=pages.map(p=>p.text||p.ocr_text||'').join(' ').slice(0,25000)+' '+el('caption').value;let r=await fetch('/api/screen',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(a)});if(!r.ok)throw Error('Screening API failed');let data=await r.json();return (data.findings||[]).filter(f=>f.material===part)}
 function classifySlide(text,index,total){
  const t=String(text||"").trim();
  const hasOffer=/(ช้อปเลย|ผ่อน|สมัคร|โปรโมชั่น|โปรโมชัน|กู้|เงินคืน|ส่งฟรี|ชำระคืน|ลดราคา|รับสิทธิ|คลิก)/.test(t);
