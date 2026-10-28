@@ -20,6 +20,7 @@ class Check(BaseModel):
  product:str="credit_card"
  campaign:str="cashback"
  communication_intent:str="unspecified"
+ document_context:str=""
  channel:str="facebook"
  caption:str=""
  artwork_text:str=""
